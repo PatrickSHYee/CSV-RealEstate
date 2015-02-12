@@ -20,6 +20,7 @@ namespace CSV_RealEstate
             
             //Display the average square footage of a Condo sold in the city of Sacramento, 
             //Use the GetAverageSquareFootageByRealEstateTypeAndCity() function.
+            Console.WriteLine("Average of {0} at {1} is {3}", "Condo", "Sacramento", GetAverageSquareFootageByRealEstateTypeAndCity(realEstateSaleList, RealEstateType.Condo, "Sacramento"));
 
             //Display the total sales of all residential homes in Elk Grove.  Use the GetTotalSalesByRealEstateTypeAndCity() function for testing.
 
@@ -43,29 +44,35 @@ namespace CSV_RealEstate
 
         public static List<RealEstateSale> GetRealEstateSaleList()
         {
-            List<RealEstateSale> RealEstateSaleList = null;
+            List<RealEstateSale> RealEstateSaleList = new List<RealEstateSale>();
             //read in the realestatedata.csv file.  As you process each row, you'll add a new 
             // RealEstateData object to the list for each row of the document, excluding the first.  bool skipFirstLine = true;
-            using (StreamReader reader = new StreamReader("realestatedata.cvs"))
+            StreamReader reader = new StreamReader("realestatedata.csv");
+            
+            string dumper = reader.ReadLine();  // skip the first line b/c it's the column titles
+            while (!reader.EndOfStream)
             {
-                reader.ReadLine();  // skip the first line b/c it's the column titles
-                while (!reader.EndOfStream)
-                {
-                    RealEstateSaleList.Add(new RealEstateSale(reader.ReadLine()));
-                }
+                RealEstateSaleList.Add(new RealEstateSale(reader.ReadLine()));
             }
-         
-            return new List<RealEstateSale>();
+
+            return RealEstateSaleList;
         }
 
+        /// <summary>
+        /// Finds the average of the square footage of a certain set of data based on the type of real estate property and the city.
+        /// </summary>
+        /// <param name="realEstateDataList">The listing</param>
+        /// <param name="realEstateType">Type of real estate property</param>
+        /// <param name="city">A city to search with</param>
+        /// <returns>The Average of the square footage</returns>
         public static double GetAverageSquareFootageByRealEstateTypeAndCity(List<RealEstateSale> realEstateDataList, RealEstateType realEstateType, string city) 
         {
-            return 0.0;
+            return realEstateDataList.Where(x => x.ReType == realEstateType && x.City.ToLower() == city.ToLower()).Average(x => x.Sqft);
         }
 
         public static decimal GetTotalSalesByRealEstateTypeAndCity(List<RealEstateSale> realEstateDataList, RealEstateType realEstateType, string city)
         {
-            return 0.0m;
+            return (decimal)realEstateDataList.Where(x => x.ReType == realEstateType && x.City.ToLower() == city.ToLower()).Sum(x=>x.Price);
         }
 
         public static int GetNumberOfSalesByRealEstateTypeAndZip(List<RealEstateSale> realEstateDataList, RealEstateType realEstateType, string zipcode)
@@ -129,8 +136,8 @@ namespace CSV_RealEstate
         public int Beds { get; set; }
         private int _baths;
         public int Baths { get; set; }
-        private int _sqft;
-        public int Sqft { get; set; }
+        private double _sqft;
+        public double Sqft { get; set; }
         private RealEstateType _reType;
         public RealEstateType ReType { get; set;}
         private string _sale_date;
@@ -155,15 +162,23 @@ namespace CSV_RealEstate
             this.State = data[3];
             this.Beds = int.Parse(data[4]);
             this.Baths = int.Parse(data[5]);
-            this.Sqft = int.Parse(data[6]);
+            this.Sqft = double.Parse(data[6]);
             if (this.Sqft == 0)
             {
                 this.ReType = RealEstateType.Lot;
             }
-            else { 
-                this.ReType = (RealEstateType)Enum.Parse(typeof(RealEstateType), data[7]); 
+            if (data[7] == "Multi-Family")
+            {
+                this.ReType = RealEstateType.MultiFamily;
             }
-            this.ReType = (RealEstateType) Enum.Parse(typeof(RealEstateType), data[7]);
+            if (data[7] == "Condo")
+            {
+                this.ReType = RealEstateType.Condo;
+            }
+            if (data[7] == "Residential")
+            {
+                this.ReType = RealEstateType.Residential;
+            }
             this.Sale_date = data[8];
             this.Price = int.Parse(data[9]);
             this.Latitude = double.Parse(data[10]);
