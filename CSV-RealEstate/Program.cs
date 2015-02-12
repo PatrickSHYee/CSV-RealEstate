@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,9 +43,17 @@ namespace CSV_RealEstate
 
         public static List<RealEstateSale> GetRealEstateSaleList()
         {
-         
+            List<RealEstateSale> RealEstateSaleList = null;
             //read in the realestatedata.csv file.  As you process each row, you'll add a new 
             // RealEstateData object to the list for each row of the document, excluding the first.  bool skipFirstLine = true;
+            using (StreamReader reader = new StreamReader("realestatedata.cvs"))
+            {
+                reader.ReadLine();  // skip the first line b/c it's the column titles
+                while (!reader.EndOfStream)
+                {
+                    RealEstateSaleList.Add(new RealEstateSale(reader.ReadLine()));
+                }
+            }
          
             return new List<RealEstateSale>();
         }
@@ -93,16 +102,73 @@ namespace CSV_RealEstate
         }
     }
 
+    /// <summary>
+    /// an enumaution of the different real estate types
+    /// </summary>
     public enum RealEstateType
     {
         //fill in with enum types: Residential, MultiFamily, Condo, Lot
+        Residential, MultiFamily, Condo, Lot
     }
+
+    /// <summary>
+    /// For each listing or line of data in the database is this object with the corresponding columns to variables with data types
+    /// </summary>
     class RealEstateSale
     {
         //Create properties, using the correct data types (not all are strings) for all columns of the CSV
+        private string _street;
+        public string Street { get; set; }
+        private string _city;
+        public string City { get; set; }
+        private string _state;
+        public string State { get; set; }
+        private int _zip;
+        public int Zip { get; set; }
+        private int _beds;
+        public int Beds { get; set; }
+        private int _baths;
+        public int Baths { get; set; }
+        private int _sqft;
+        public int Sqft { get; set; }
+        private RealEstateType _reType;
+        public RealEstateType ReType { get; set;}
+        private string _sale_date;
+        public string Sale_date { get; set; }
+        private int _price;
+        public int Price { get; set; }
+        private double _latitude;
+        public double Latitude { get; set; }
+        private double _longitude;
+        public double Longitude { get; set; }
 
         //The constructor will take a single string arguement.  This string will be one line of the real estate data.
         // Inside the constructor, you will seperate the values into their corrosponding properties, and do the necessary conversions
+        public RealEstateSale(string listing)
+        {
+            List<string> data = listing.Split(',').ToList();
+            // our columns
+            //street,city,zip,state,beds,baths,sq__ft,type,sale_date,price,latitude,longitude
+            this.Street = data[0];
+            this.City = data[1];
+            this.Zip = int.Parse(data[2]);
+            this.State = data[3];
+            this.Beds = int.Parse(data[4]);
+            this.Baths = int.Parse(data[5]);
+            this.Sqft = int.Parse(data[6]);
+            if (this.Sqft == 0)
+            {
+                this.ReType = RealEstateType.Lot;
+            }
+            else { 
+                this.ReType = (RealEstateType)Enum.Parse(typeof(RealEstateType), data[7]); 
+            }
+            this.ReType = (RealEstateType) Enum.Parse(typeof(RealEstateType), data[7]);
+            this.Sale_date = data[8];
+            this.Price = int.Parse(data[9]);
+            this.Latitude = double.Parse(data[10]);
+            this.Longitude = double.Parse(data[11]);
+        }
 
         //When computing the RealEstateType, if the square footage is 0, then it is of the Lot type, otherwise, use the string
         // value of the "Type" column to determine its corresponding enumeration type.
